@@ -68,6 +68,11 @@ function zoomOut (e) {
 }
 
 function loadLeafletMap() {
+
+    if (typeof(map) !== 'undefined') {
+        map.remove();
+    }
+
     var deviceLocationID = "#device-location"
     container = "device-location",
         zoomLevel = 13,
@@ -112,6 +117,14 @@ function loadLeafletMap() {
     preLoadBuildings();
 }
 
+function initialLoad() {
+    if (document.getElementById('device-location') == null) {
+        setTimeout(initialLoad, 500); // give everything some time to render
+    } else {
+        loadLeafletMap();
+    }
+}
+
 function preLoadDevices() {
     var getDevicesApi = "/senseme/building/0/0/devices";
     invokerUtil.get(getDevicesApi, function (data, textStatus, jqXHR) {
@@ -147,7 +160,6 @@ function preLoadBuildings() {
             invokerUtil.get(getBuildingApi, function (data, textStatus, jqXHR) {
                 console.log("here ///");
                 if (jqXHR.status == 200) {
-                    //[{"buildingId":1,"buildingName":"ayyoobs1","owner":"admin","longitude":"79.97607422294095","latitude":"6.995539474716988","numFloors":4}
                     var buildings = JSON.parse(data);
                     var buildingIds;
                     if (buildings.length > 0) {
@@ -312,6 +324,29 @@ function saveLocation() {
     hidePopup();
 }
 
+function deleteBuilding(id) {
+    var buildingId = $("#" + id).attr('data-buildingid');
+    var deleteBuildingApi = "/senseme/building/remove/"+buildingId;
+    var buildingdata = {};
+
+    invokerUtil.post(deleteBuildingApi, buildingdata , function (data, textStatus, jqXHR) {
+    }, function (jqXHR) {
+        console.log(jqXHR.responseText);
+        if (jqXHR.status == 400) {
+            console.log("error")
+        } else {
+            var response = JSON.parse(jqXHR.responseText).message;
+        }
+    });
+
+    updateDiv();
+    initialLoad();
+}
+
+function updateDiv(){
+    $( '#sidebar-messages' ).empty();
+}
+
 function addBuilding(e) {
     //save building here.
     tmpEventStore = e;
@@ -392,6 +427,9 @@ function addingMarker(cord, locationName, buildingId, building, buildingdevice) 
     content.find("#building-content-div").attr("data-markerid", markerId);
     content.find("#building-content-div").attr("id","building-content-" + buildingId);
     content.find("#building-location").attr("href","/buildingmonitor/buildings?buildingId=" + buildingId);
+
+    content.find("#building-delete-div").attr("data-buildingid", buildingId);
+    content.find("#building-delete-div").attr("id","building-delete-" + buildingId);
 
     popup = L.popup({
         autoPan: true,

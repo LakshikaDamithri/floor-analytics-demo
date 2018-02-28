@@ -20,6 +20,7 @@ package org.wso2.iot.senseme.api.dao;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.openjpa.lib.meta.SourceTracker;
 import org.wso2.iot.senseme.api.dto.BuildingInfo;
 import org.wso2.iot.senseme.api.dto.FloorInfo;
 import org.wso2.iot.senseme.api.util.DeviceTypeUtils;
